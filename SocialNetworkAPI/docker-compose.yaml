@@ -1,0 +1,35 @@
+version: "3.9"
+services:
+  db:
+    image: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: cats-db
+    ports: 
+      - "3307:3306"
+    volumes:
+      - ./db/dbinit.sql:/docker-entrypoint-initdb.d/db.sql
+    networks:
+      - network
+    healthcheck:
+      test: mysqladmin ping -h db -u root --password=root
+
+  api:
+    depends_on:
+      db:
+        condition: service_healthy
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      Logging__Console__FormatterName: ""
+      ASPNETCORE_ENVIRONMENT: "Docker"
+    ports:
+      - "5000:80"
+    networks:
+      - network
+
+networks:
+  network:
+    driver: bridge

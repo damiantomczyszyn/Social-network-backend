@@ -1,0 +1,18 @@
+pipelines:
+  default:
+    - step:
+        name: Archive
+        script:
+          - git archive --format=tar.gz HEAD -o socialnetwork.tar.gz
+        artifacts:
+          - socialnetwork.tar.gz
+      
+    - step:
+        name: Deploy to production
+        deployment: production
+        script:
+          - pipe: atlassian/heroku-deploy:0.1.1
+            variables:
+              HEROKU_API_KEY: $HEROKU_API_KEY
+              HEROKU_APP_NAME: $HEROKU_APP_NAME
+              ZIP_FILE: socialnetwork.tar.gz
